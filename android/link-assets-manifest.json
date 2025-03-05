@@ -1,0 +1,13 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "frontend/assets/fonts/Tourney ExtraBold.ttf",
+      "sha1": "b9f3639f244ae03a2c3f7b7e7c08e5e96828f759"
+    },
+    {
+      "path": "frontend/assets/fonts/Tourney Thin.ttf",
+      "sha1": "b0942ac22565dd1d06fcc62635b50d99e8c340f8"
+    }
+  ]
+}
