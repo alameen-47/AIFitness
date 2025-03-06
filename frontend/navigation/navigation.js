@@ -3,6 +3,8 @@ const Stack = createNativeStackNavigator();
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {HomeScreen} from '../screens/HomeScreen';
+import {TrainerMainScreen} from '../screens/trainer/TrainerMainScreen';
+import {TrainerSaveScreen} from '../screens/trainer/TrainerSaveScreen';
 export const AppNavigation = () => {
   return (
     <NavigationContainer>
@@ -10,6 +12,8 @@ export const AppNavigation = () => {
         screenOptions={{headerShown: false}}
         initialRouteName="HomeScreen">
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="TrainerMainScreen" component={TrainerMainScreen} />
+        <Stack.Screen name="TrainerSaveScreen" component={TrainerSaveScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
