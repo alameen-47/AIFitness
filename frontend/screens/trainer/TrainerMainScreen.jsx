@@ -33,8 +33,7 @@ export const TrainerMainScreen = () => {
           style={{width: wp(), height: hp(90), borderRadius: wp(5)}}
           resizeMode="contain"
         />
-        <TouchableOpacity
-          onPress={() => navigation.navigate('TrainerSaveScreen')}>
+        <TouchableOpacity onPress={() => navigation.navigate('CameraScreen')}>
           <Image
             source={require('../../assets/icons/scan.png')}
             className=" rounded-lg bottom-0 absolute z-10 w-[20%] object-contain mx-[40%] my-[10%]"
