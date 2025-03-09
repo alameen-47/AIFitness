@@ -9,7 +9,15 @@ export const CameraScreen = () => {
   const devices = useCameraDevices();
   console.log('Available devices:', devices);
 
-  const device = devices.back;
+  const device = devices.back ?? devices.front;
+
+  useEffect(() => {
+    setTimeout(() => {
+      const status = Camera.getCameraPermissionStatus();
+      setHasPermission(status === 'granted');
+    }, 2000);
+  }, []);
+  
 
   useEffect(() => {
     (async () => {
@@ -30,11 +38,12 @@ export const CameraScreen = () => {
     return <Text>Permission Denied</Text>;
   }
   if (!device) {
-    return <Text>No camera device found</Text>;
+    return <Text>No camera device found</Text>
+    ;
   }
   return (
     <View className="bg-green-500 h-screen">
-      <Camera device={device} isAactive={true} className="flex" />
+      <Camera device={device} isActive={true} className="flex" />
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text>Close CAmera</Text>
       </TouchableOpacity>
