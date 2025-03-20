@@ -33,13 +33,23 @@ export const TrainerMainScreen = () => {
           style={{width: wp(), height: hp(90), borderRadius: wp(5)}}
           resizeMode="contain"
         />
-        <TouchableOpacity onPress={() => navigation.navigate('CameraScreen')}>
-          <Image
-            source={require('../../assets/icons/scan.png')}
-            className=" rounded-lg bottom-0 absolute z-10 w-[20%] object-contain mx-[40%] my-[10%]"
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        <View className="flex   justify-center item-center  flex-row  z-10 p-4 bottom-[15%] h-[15%]">
+          <TouchableOpacity
+            onPress={() => navigation.navigate('CameraScreenView')}>
+            <Image
+              source={require('../../assets/icons/scan.png')}
+              className="h-[80%]"
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('BlazePose')}>
+            <Image
+              source={require('../../assets/icons/VIDEO_FILE.png')}
+              className="h-[80%]"
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );

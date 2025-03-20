@@ -5,17 +5,19 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {HomeScreen} from '../screens/HomeScreen';
 import {TrainerMainScreen} from '../screens/trainer/TrainerMainScreen';
 import {TrainerSaveScreen} from '../screens/trainer/TrainerSaveScreen';
-import {CameraScreen} from '../screens/trainer/CameraScreen';
+import {CameraScreen, CameraScreenView} from '../screens/trainer/CameraScreen';
+import {BlazePoseVideo} from '../screens/trainer/BlazePoseVideo';
 export const AppNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{headerShown: false}}
-        initialRouteName="HomeScreen">
+        initialRouteName="TrainerMainScreen">
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="TrainerMainScreen" component={TrainerMainScreen} />
         <Stack.Screen name="TrainerSaveScreen" component={TrainerSaveScreen} />
-        <Stack.Screen name="CameraScreen" component={CameraScreen} />
+        <Stack.Screen name="CameraScreenView" component={CameraScreenView} />
+        <Stack.Screen name="BlazePose" component={BlazePoseVideo} />
       </Stack.Navigator>
     </NavigationContainer>
   );
