@@ -13,8 +13,11 @@ import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import Svg, {Circle, Line} from 'react-native-svg';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
+import {setPose, clearPose} from '../../features/poseSlice.js';
+import {useDispatch, useSelector} from 'react-redux';
 
 const TensorCamera = cameraWithTensors(Camera);
+const {width, height} = Dimensions.get('window');
 
 export const CameraScreenView = () => {
   const navigation = useNavigation();
@@ -23,6 +26,8 @@ export const CameraScreenView = () => {
   const [isScanning, setIsScanning] = useState(false);
   const cameraRef = useRef(null);
   const detectorRef = useRef(null);
+  const dispatch = useDispatch();
+  const keypoints = useSelector(state => state.pose.keypoints);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -34,6 +39,20 @@ export const CameraScreenView = () => {
     };
     loadModel();
   }, []);
+
+  const handleCameraStream = async images => {
+    if (!isScanning || !detectorRef.current) return;
+
+    const imageTensor = images.next().value;
+    if (!imageTensor) return;
+
+    const poseEstimates = await detectorRef.current.estimatePoses(imageTensor);
+    if (poseEstimates.length > 0) {
+      dispatch(setPose(poseEstimates[0].keypoints));
+      console.log('-----Pose Data:-----', poseEstimates[0].keypoints);
+    }
+    tf.dispose(imageTensor);
+  };
 
   useEffect(() => {
     checkPermission();
@@ -59,7 +78,14 @@ export const CameraScreenView = () => {
         }}
         resizeMode="cover"
       />
-
+      {/* Skeleton Overlay */}(
+      <Svg className="absolute inset-0">
+        {keypoints.map((point, index) => (
+          <Circle key={index} cx={point.x} cy={point.y} r="5" fill="red" />
+        ))}
+        {/* Draw Lines for Skeleton */}
+        {drawSkeleton(keypoints)}
+      </Svg>
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text className="font-bold">Close CAmera</Text>
       </TouchableOpacity>
@@ -74,4 +100,46 @@ export const CameraScreenView = () => {
       <Text className="bg-green-400 ">CameraScreen</Text>
     </View>
   );
+};
+
+const drawSkeleton = keypoints => {
+  const connections = [
+    // Upper Body
+    ['nose', 'leftShoulder'],
+    ['nose', 'rightShoulder'],
+    ['leftShoulder', 'leftElbow'],
+    ['leftElbow', 'leftWrist'],
+    ['rightShoulder', 'rightElbow'],
+    ['rightElbow', 'rightWrist'],
+
+    // Lower Body
+    ['leftHip', 'leftKnee'],
+    ['leftKnee', 'leftAnkle'],
+    ['rightHip', 'rightKnee'],
+    ['rightKnee', 'rightAnkle'],
+
+    // Spine and torso
+    ['leftShoulder', 'leftHip'],
+    ['rightShoulder', 'rightHip'],
+    ['leftHip', 'rightHip'],
+
+    // Head connection
+    ['nose', 'leftEye'],
+    ['nose', 'rightEye'],
+  ];
+  return connections.map(([startPart, endPart], index) => {
+    const start = keypoints.find(point => point.name === startPart);
+    const end = keypoints.find(point => point.name === endPart);
+    return (
+      <Line
+        key={index}
+        x1={start?.x}
+        y1={start?.y}
+        x2={end?.x}
+        y2={end?.y}
+        stroke="blue"
+        strokeWidth={2}
+      />
+    );
+  });
 };
