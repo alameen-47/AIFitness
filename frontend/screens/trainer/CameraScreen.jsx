@@ -9,14 +9,12 @@ import {
   View,
 } from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import * as tf from '@tensorflow/tfjs';
-import * as poseDetection from '@tensorflow-models/pose-detection';
+import Tflite from 'react-native-tflite';
+
 import Svg, {Circle, Line} from 'react-native-svg';
-import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import {setPose, clearPose} from '../../features/poseSlice.js';
 import {useDispatch, useSelector} from 'react-redux';
 
-const TensorCamera = cameraWithTensors(Camera);
 const {width, height} = Dimensions.get('window');
 
 export const CameraScreenView = () => {
@@ -24,35 +22,49 @@ export const CameraScreenView = () => {
   const devices = useCameraDevices();
   const device = devices.find(d => d.position === 'back');
   const [isScanning, setIsScanning] = useState(false);
+  const [isModelReady, setIsModelReady] = useState(false);
   const cameraRef = useRef(null);
   const detectorRef = useRef(null);
   const dispatch = useDispatch();
   const keypoints = useSelector(state => state.pose.keypoints);
-
+  // const tflite = useRef(new Tflite()).current;
+  // const tflite = useRef(null);
+  // useEffect(() => {
+  //   const loadModel = async () => {
+  //     try {
+  //       tflite.current = new Tflite();
+  //       await tflite.current.loadModel({
+  //         model: 'movenet.tflite',
+  //         labels: '',
+  //       });
+  //       setIsModelReady(true);
+  //       console.log('✅ Model loaded successfully');
+  //     } catch (error) {
+  //       console.error('❌ Model loading failed:', error);
+  //     }
+  //   };
+  //   loadModel();
+  //   return () => {
+  //     tflite.current?.close();
+  //   };
+  // }, []);
   useEffect(() => {
-    const loadModel = async () => {
-      await tf.ready();
-      detectorRef.current = await poseDetection.createDetector(
-        poseDetection.SupportedModels.MoveNet,
-        {modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER},
-      );
-    };
-    loadModel();
+    const tflite = new Tflite();
+
+    tflite.loadModel(
+      {
+        model: 'movenet.tflite',
+        numThreads: 1, // default
+      },
+      (err, res) => {
+        if (err) {
+          console.error('❌ Model load error:', err);
+        } else {
+          console.log('✅ Model loaded:', res);
+        }
+      },
+    );
   }, []);
-
-  const handleCameraStream = async images => {
-    if (!isScanning || !detectorRef.current) return;
-
-    const imageTensor = images.next().value;
-    if (!imageTensor) return;
-
-    const poseEstimates = await detectorRef.current.estimatePoses(imageTensor);
-    if (poseEstimates.length > 0) {
-      dispatch(setPose(poseEstimates[0].keypoints));
-      console.log('-----Pose Data:-----', poseEstimates[0].keypoints);
-    }
-    tf.dispose(imageTensor);
-  };
 
   useEffect(() => {
     checkPermission();
@@ -76,16 +88,18 @@ export const CameraScreenView = () => {
         style={{
           flex: 1,
         }}
+        // onFrame={processFrame}
+        pixelFormat="rgb"
         resizeMode="cover"
       />
-      {/* Skeleton Overlay */}(
+      {/* Skeleton Overlay(
       <Svg className="absolute inset-0">
         {keypoints.map((point, index) => (
           <Circle key={index} cx={point.x} cy={point.y} r="5" fill="red" />
         ))}
         {/* Draw Lines for Skeleton */}
-        {drawSkeleton(keypoints)}
-      </Svg>
+      {drawSkeleton(keypoints)}
+      {/* </Svg> */}
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text className="font-bold">Close CAmera</Text>
       </TouchableOpacity>
@@ -128,6 +142,10 @@ const drawSkeleton = keypoints => {
     ['nose', 'rightEye'],
   ];
   return connections.map(([startPart, endPart], index) => {
+    if (!keypoints) {
+      console.warn('keypoints is null or undefined');
+      return null; // Prevents the error
+    }
     const start = keypoints.find(point => point.name === startPart);
     const end = keypoints.find(point => point.name === endPart);
     return (
